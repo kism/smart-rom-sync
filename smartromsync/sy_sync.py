@@ -1,49 +1,16 @@
-#!/usr/bin/env python3
-"""Sync a generated list of ROMs to a remote server using rsync."""
+"""Sync object for a system."""
 
-# Needs to be python 3.11 or greater
-
-import argparse
 import logging
 import re
-import subprocess
-import tomllib
 from pathlib import Path
-from typing import ClassVar, TypedDict
+from typing import ClassVar
+
+from .sy_types import ReleaseInfo, SystemDef, TargetDef
 
 logger = logging.getLogger(__name__)
 
-
-class TargetDef(TypedDict):
-    """Target definition for the syncer."""
-
-    type: str
-    rsync_host: str
-    path: str
-
-
-class ReleaseInfo(TypedDict):
-    """Release information for a file."""
-
-    region_dir: str
-    region_full: str
-    special: str | None
-    extra_info: list[str]
-
-
-class SystemDef(TypedDict):
-    """System definition for the syncer."""
-
-    local_dir: Path
-    remote_dir: Path
-    region_list_include: list[str]
-    region_list_exclude: list[str]
-    special_list_include: list[str]
-    special_list_exclude: list[str]
-
-
-class SystemSyncer:
-    """Syncer for a system."""
+class SystemSync:
+    """Sync object for a system."""
 
     SPECIAL_DIR_CRITERIA: ClassVar = {
         "Demo": ["Demo"],
@@ -79,7 +46,7 @@ class SystemSyncer:
     ]
 
     def __init__(self, system_def: SystemDef, target_def: TargetDef, *, dry_run: bool = False) -> None:
-        """Initialize the syncer with the system and target definitions."""
+        """Initialize the sync object with the system and target definitions."""
         self.all_files: list[Path] = []
         self.dry_run = dry_run
 
@@ -111,7 +78,7 @@ class SystemSyncer:
         self.rsync_inputs: dict[str, list[Path]] = self._get_files_to_push()
 
     def print_summary(self) -> None:
-        """Print a summary of the syncer."""
+        """Print a summary of the sync object."""
         logger.info("Found %s folders to push to", len(self.rsync_inputs.keys()))
 
     def rsync(self) -> None:
@@ -252,58 +219,3 @@ class SystemSyncer:
                 files_to_push[output_dir_str].append(file_path)
 
         return files_to_push
-
-
-def main() -> None:
-    """Main function to run the script."""
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
-
-    parser = argparse.ArgumentParser(description="Build a sync list for the specified ROMs.")
-    parser.add_argument(
-        "--dry-run",
-        "-n",
-        action="store_true",
-        help="Run the script without actually syncing the files.",
-    )
-    parser.add_argument(
-        "config_file",
-        type=str,
-        help="Path to the config file containing the list of ROMs.",
-    )
-
-    args = parser.parse_args()
-    config_file = Path(args.config_file)
-
-    with config_file.open("rb") as f:
-        config = tomllib.load(f)
-    target_tmp = config.get("target", [])
-    target: TargetDef = TargetDef(
-        type=target_tmp.get("type", ""),
-        rsync_host=target_tmp.get("rsync_host", ""),
-        path=target_tmp.get("path", ""),
-    )
-
-    systems = config.get("systems", [])
-
-    for system_def_raw in systems:
-        print()  # noqa: T201 # Just to make the output nicer
-        system_def = SystemDef(
-            local_dir=Path(system_def_raw["local_dir"]),
-            remote_dir=Path(system_def_raw["remote_dir"]),
-            region_list_include=system_def_raw.get("region_list_include", []),
-            region_list_exclude=system_def_raw.get("region_list_exclude", []),
-            special_list_include=system_def_raw.get("special_list_include", []),
-            special_list_exclude=system_def_raw.get("special_list_exclude", []),
-        )
-
-        logger.info("Processing %s...", system_def["local_dir"])
-        system = SystemSyncer(system_def=system_def, target_def=target, dry_run=args.dry_run)
-        system.print_summary()
-        system.rsync()
-
-
-if __name__ == "__main__":
-    main()

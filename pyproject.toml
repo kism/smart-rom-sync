@@ -1,5 +1,5 @@
 [project]
-name = "rom-archiving"
+name = "smart-rom-sync"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -63,7 +63,7 @@ docstring-code-format = true
 docstring-code-line-length = 40
 
 [tool.mypy]
-files = ["{{cookiecutter.__app_package}}"]
+files = ["smartromsync"]
 namespace_packages = true
 explicit_package_bases = true
 show_error_codes = true
