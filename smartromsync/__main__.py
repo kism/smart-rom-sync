@@ -1,22 +1,19 @@
 """Main entry point for the smart-rom-sync program."""
 
 import argparse
-import logging
 import tomllib
 from pathlib import Path
 
+from .logger import get_logger, setup_logger
 from .sy_sync import SystemSync
 from .sy_types import SystemDef, TargetDef
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def main() -> None:
     """Main function to run the script."""
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
+    setup_logger()
 
     parser = argparse.ArgumentParser(description="Build a sync list for the specified ROMs.")
     parser.add_argument(
@@ -29,6 +26,12 @@ def main() -> None:
         "--no-run",
         action="store_true",
         help="Run the script, just print the rsync commands.",
+    )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        default="INFO",
+        help="Set the logging level (default: INFO)",
     )
     parser.add_argument(
         "config_file",

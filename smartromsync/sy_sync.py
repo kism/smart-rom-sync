@@ -1,15 +1,15 @@
 """Sync object for a system."""
 
-import logging
 import re
+import subprocess
 from pathlib import Path
 from typing import ClassVar
-import subprocess
 
-from .sy_types import ReleaseInfo, SystemDef, TargetDef
+from .logger import get_logger
 from .sy_helpers import get_system_temp_folder
+from .sy_types import ReleaseInfo, SystemDef, TargetDef
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class SystemSync:
@@ -46,6 +46,11 @@ class SystemSync:
         "China",
         "Brazil",
         "Canada",
+        "Russia",
+        "United Kingdom",
+        "Latin America",
+        "Netherlands",
+        "Scandinavia",
     ]
 
     def __init__(
@@ -95,7 +100,7 @@ class SystemSync:
             logger.info("Syncing %s files to %s...", len(files), dest_folder)
 
             rsync_file_list = tmp_folder / f"rsync_fl{dest_folder.replace('/', '_')}.txt"
-            logger.info("Rsync file list: %s", rsync_file_list)
+            logger.debug("rsync file list: %s", rsync_file_list)
 
             with rsync_file_list.open("w") as f:
                 for file in files:
@@ -113,7 +118,7 @@ class SystemSync:
                 "rsync",
                 rsync_options,
                 "--info=progress2",
-                # "--size-only",
+                "--size-only",
                 f"--files-from={rsync_file_list}",
                 f"{self.local_dir}",
                 rsync_dest,
@@ -122,9 +127,8 @@ class SystemSync:
             mkdir_command = ["mkdir", "-p", dest_folder]
             if self.rsync_host_str:
                 mkdir_command = ["ssh", self.rsync_host_str, "mkdir", "-p", dest_folder]
-                # mkdir_command = ["ssh", self.rsync_host_str,  f"mkdir -p {dest_folder}"]
 
-            logger.info("Rsync command: %s", " ".join(rsync_cmd))
+            logger.info("rsync command: %s", " ".join(rsync_cmd))
             logger.info("mkdir command: %s", " ".join(mkdir_command))
 
             if not self.no_run:
@@ -137,8 +141,11 @@ class SystemSync:
                 subprocess.run(rsync_cmd)
                 logger.info("Rsync completed!")
 
-
     def _get_file_list(self) -> None:
+        if not self.local_dir.is_dir():
+            logger.error("Local directory %s is not a directory", self.local_dir)
+            return
+
         all_files = Path(self.local_dir).rglob("*")
         self.all_files = [f for f in all_files if f.is_file()]
         logger.info("Found %s files in %s", len(self.all_files), self.local_dir)
@@ -171,7 +178,7 @@ class SystemSync:
         if current_candidate_region:
             return current_candidate_region, region_full_str, region_index
 
-        logger.info("Region not found in %s ", release_info_raw)
+        logger.warning("Region not found in %s ", release_info_raw)
 
         return "Unknown", "Unknown", None
 
