@@ -51,6 +51,9 @@ class SystemSync:
         "Latin America",
         "Netherlands",
         "Scandinavia",
+        "Argentina",
+        "Mexico",
+        "Denmark",
     ]
 
     def __init__(
@@ -112,7 +115,7 @@ class SystemSync:
 
             rsync_dest = dest_folder
             if self.rsync_host_str:
-                rsync_dest = f"{self.rsync_host_str}:/{dest_folder}"
+                rsync_dest = f"{self.rsync_host_str}:{dest_folder}"
 
             rsync_cmd = (
                 "rsync",
@@ -128,10 +131,10 @@ class SystemSync:
             if self.rsync_host_str:
                 mkdir_command = ["ssh", self.rsync_host_str, "mkdir", "-p", dest_folder]
 
-            logger.info("rsync command: %s", " ".join(rsync_cmd))
-            logger.info("mkdir command: %s", " ".join(mkdir_command))
-
             if not self.no_run:
+                logger.info("rsync command: %s", " ".join(rsync_cmd))
+                logger.info("mkdir command: %s", " ".join(mkdir_command))
+
                 logger.info("Running rsync")
                 if not self.dry_run:
                     # Create the remote directory if it doesn't exist
