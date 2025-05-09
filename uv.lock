@@ -43,21 +43,6 @@ wheels = [
 ]
 
 [[package]]
-name = "rom-archiving"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "mypy" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "mypy", specifier = ">=1.15.0" },
-    { name = "ruff", specifier = ">=0.11.8" },
-]
-
-[[package]]
 name = "ruff"
 version = "0.11.8"
 source = { registry = "https://pypi.org/simple" }
@@ -81,6 +66,25 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/7b/a9/eaa571eb70648c9bde3120a1d5892597de57766e376b831b06e7c1e43945/ruff-0.11.8-py3-none-win_amd64.whl", hash = "sha256:6e70d11043bef637c5617297bdedec9632af15d53ac1e1ba29c448da9341b0c4", size = 11597410, upload-time = "2025-05-01T14:53:16.571Z" },
     { url = "https://files.pythonhosted.org/packages/cd/be/f6b790d6ae98f1f32c645f8540d5c96248b72343b0a56fab3a07f2941897/ruff-0.11.8-py3-none-win_arm64.whl", hash = "sha256:304432e4c4a792e3da85b7699feb3426a0908ab98bf29df22a31b0cdd098fac2", size = 10713129, upload-time = "2025-05-01T14:53:22.27Z" },
 ]
+
+[[package]]
+name = "smartromsync"
+version = "0.1.0"
+source = { editable = "." }
+
+[package.dev-dependencies]
+lint = [
+    { name = "ruff" },
+]
+type = [
+    { name = "mypy" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+lint = [{ name = "ruff", specifier = ">=0.9.7" }]
+type = [{ name = "mypy", specifier = ">=1.15.0" }]
 
 [[package]]
 name = "typing-extensions"
