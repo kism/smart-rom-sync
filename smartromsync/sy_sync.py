@@ -9,6 +9,7 @@ from .sy_types import ReleaseInfo, SystemDef, TargetDef
 
 logger = logging.getLogger(__name__)
 
+
 class SystemSync:
     """Sync object for a system."""
 
@@ -149,6 +150,9 @@ class SystemSync:
             for special, equivalents in self.SPECIAL_DIR_CRITERIA.items():
                 for equiv in equivalents:
                     if equiv in release_snippet:
+                        if not isinstance(special, str):
+                            msg = f"Expected str, got {type(special)}"
+                            raise TypeError(msg)
                         return special  # First match wins
 
         return None
