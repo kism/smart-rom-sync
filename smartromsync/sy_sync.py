@@ -99,7 +99,7 @@ class SystemSync:
                 f"--files-from={rsync_file_list}",
                 f"{self.rsync_host_str}{dest_folder}",
             ]
-            if self.dry_run:
+            if not self.dry_run:
                 logger.info(rsync_cmd)
 
         rsync_file_list.unlink(missing_ok=True)
