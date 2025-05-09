@@ -93,7 +93,8 @@ class SystemSync:
         for dest_folder, files in self.rsync_inputs.items():
             logger.info("Syncing %s files to %s...", len(files), dest_folder)
 
-            rsync_file_list = tmp_folder / f"rsync_file_list_{dest_folder.split('/')[-1]}.txt"
+
+            rsync_file_list = tmp_folder / f"rsync_fl{dest_folder.replace("/","_")}.txt"
             logger.info("Rsync file list: %s", rsync_file_list)
 
             with rsync_file_list.open("w") as f:
@@ -115,8 +116,6 @@ class SystemSync:
 
             if not self.no_run:
                 logger.info("Running for real")
-
-            rsync_file_list.unlink(missing_ok=True)
 
     def _get_file_list(self) -> None:
         all_files = Path(self.local_dir).rglob("*")
