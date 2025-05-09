@@ -23,7 +23,12 @@ def main() -> None:
         "--dry-run",
         "-n",
         action="store_true",
-        help="Run the script without actually syncing the files.",
+        help="Run the script with rsync in dry run mode.",
+    )
+    parser.add_argument(
+        "--no-run",
+        action="store_true",
+        help="Run the script, just print the rsync commands.",
     )
     parser.add_argument(
         "config_file",
@@ -57,7 +62,7 @@ def main() -> None:
         )
 
         logger.info("Processing %s...", system_def["local_dir"])
-        system = SystemSync(system_def=system_def, target_def=target, dry_run=args.dry_run)
+        system = SystemSync(system_def=system_def, target_def=target, dry_run=args.dry_run, no_run=args.no_run)
         system.print_summary()
         system.rsync()
 

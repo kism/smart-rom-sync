@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import ClassVar
 
 from .sy_types import ReleaseInfo, SystemDef, TargetDef
+from .sy_helpers import get_system_temp_folder
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +47,13 @@ class SystemSync:
         "Canada",
     ]
 
-    def __init__(self, system_def: SystemDef, target_def: TargetDef, *, dry_run: bool = False) -> None:
+    def __init__(
+        self, system_def: SystemDef, target_def: TargetDef, *, dry_run: bool = False, no_run: bool = False
+    ) -> None:
         """Initialize the sync object with the system and target definitions."""
         self.all_files: list[Path] = []
         self.dry_run = dry_run
+        self.no_run = no_run
 
         self.target_def = target_def
         self.rsync_host_str: str = ""
@@ -84,10 +88,14 @@ class SystemSync:
 
     def rsync(self) -> None:
         """Run the rsync command to sync the files."""
-        rsync_file_list = Path.cwd() / "rsync_file_list.txt"
+        tmp_folder = get_system_temp_folder()
 
         for dest_folder, files in self.rsync_inputs.items():
             logger.info("Syncing %s files to %s...", len(files), dest_folder)
+
+            rsync_file_list = tmp_folder / f"rsync_file_list_{dest_folder.split('/')[-1]}.txt"
+            logger.info("Rsync file list: %s", rsync_file_list)
+
             with rsync_file_list.open("w") as f:
                 for file in files:
                     f.write(f"{file}\n")
@@ -99,13 +107,16 @@ class SystemSync:
                 f"--files-from={rsync_file_list}",
                 f"{self.rsync_host_str}{dest_folder}",
             ]
-            if not self.dry_run:
-                logger.info(rsync_cmd)
 
-        rsync_file_list.unlink(missing_ok=True)
+            if self.dry_run:
+                rsync_cmd[1] = rsync_cmd[1] + "n"
 
-    def _create_rsync_file_list(self) -> None:
-        pass
+            logger.info("Rsync command: %s", " ".join(rsync_cmd))
+
+            if not self.no_run:
+                logger.info("Running for real")
+
+            rsync_file_list.unlink(missing_ok=True)
 
     def _get_file_list(self) -> None:
         all_files = Path(self.local_dir).rglob("*")
