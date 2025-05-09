@@ -31,3 +31,4 @@ class SystemDef(TypedDict):
     region_list_exclude: list[str]
     special_list_include: list[str]
     special_list_exclude: list[str]
+

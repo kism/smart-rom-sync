@@ -59,7 +59,7 @@ class SystemSync:
         self.target_def = target_def
         self.rsync_host_str: str = ""
         if self.target_def["type"] == "remote":
-            self.rsync_host_str = f"{self.target_def['rsync_host']}:"
+            self.rsync_host_str = f"{self.target_def['rsync_host']}"
 
         local_dir: Path | None = system_def.get("local_dir")
         if not local_dir:
@@ -81,7 +81,7 @@ class SystemSync:
         self.special_list_include: list[str] = system_def.get("special_list_include", [])
         self.special_list_exclude: list[str] = system_def.get("special_list_exclude", [])
 
-        self.rsync_inputs: dict[str, list[Path]] = self._get_files_to_push()
+        self.rsync_inputs: dict[str, list[str]] = self._get_files_to_push()
 
     def print_summary(self) -> None:
         """Print a summary of the sync object."""
@@ -101,25 +101,42 @@ class SystemSync:
                 for file in files:
                     f.write(f"{file}\n")
 
-            rsync_options = "-av"
+            rsync_options = "-hv"
             if self.dry_run:
                 rsync_options = rsync_options + "n"
 
+            rsync_dest = dest_folder
+            if self.rsync_host_str:
+                rsync_dest = f"{self.rsync_host_str}:/{dest_folder}"
+
             rsync_cmd = (
                 "rsync",
-                "-av",
+                rsync_options,
                 "--info=progress2",
+                # "--size-only",
                 f"--files-from={rsync_file_list}",
-                f"{self.rsync_host_str}{dest_folder}",
+                f"{self.local_dir}",
+                rsync_dest,
             )
 
+            mkdir_command = ["mkdir", "-p", dest_folder]
+            if self.rsync_host_str:
+                mkdir_command = ["ssh", self.rsync_host_str, "mkdir", "-p", dest_folder]
+                # mkdir_command = ["ssh", self.rsync_host_str,  f"mkdir -p {dest_folder}"]
+
             logger.info("Rsync command: %s", " ".join(rsync_cmd))
+            logger.info("mkdir command: %s", " ".join(mkdir_command))
 
             if not self.no_run:
                 logger.info("Running rsync")
-                proc = subprocess.run(rsync_cmd)
+                if not self.dry_run:
+                    # Create the remote directory if it doesn't exist
+                    logger.info("Creating destination directory with command %s", mkdir_command)
+                    subprocess.run(mkdir_command)
 
-            quit()
+                subprocess.run(rsync_cmd)
+                logger.info("Rsync completed!")
+
 
     def _get_file_list(self) -> None:
         all_files = Path(self.local_dir).rglob("*")
@@ -214,11 +231,11 @@ class SystemSync:
 
         return True
 
-    def _get_files_to_push(self) -> dict[str, list[Path]]:
+    def _get_files_to_push(self) -> dict[str, list[str]]:
         if not self.all_files:
             self._get_file_list()
 
-        files_to_push: dict[str, list[Path]] = {}
+        files_to_push: dict[str, list[str]] = {}
 
         for file_path in self.all_files:
             release_info = self._get_release_info(file_path.name)
@@ -234,6 +251,6 @@ class SystemSync:
                 if not files_to_push.get(output_dir_str):
                     files_to_push[output_dir_str] = []
 
-                files_to_push[output_dir_str].append(file_path)
+                files_to_push[output_dir_str].append(file_path.name)
 
         return files_to_push

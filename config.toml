@@ -1,13 +1,12 @@
 [target]
-type = "local"
+type = "remote"
 rsync_host = "root@mrpi.kg.lan"
-path = "/tmp/rom/"
+path = "/media/fat/"
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Game Boy"
-remote_dir = ""
-# remote_dir = "/games/GB/"
-region_list_include = ["USA", "Japan"]
+remote_dir = "/games/GB/"
+region_list_include = ["USA", "Japan", "Europe"]
 region_list_exclude = []
 special_list_include = []
 special_list_exclude = []
