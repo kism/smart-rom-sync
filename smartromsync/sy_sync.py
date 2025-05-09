@@ -4,6 +4,7 @@ import logging
 import re
 from pathlib import Path
 from typing import ClassVar
+import subprocess
 
 from .sy_types import ReleaseInfo, SystemDef, TargetDef
 from .sy_helpers import get_system_temp_folder
@@ -93,29 +94,32 @@ class SystemSync:
         for dest_folder, files in self.rsync_inputs.items():
             logger.info("Syncing %s files to %s...", len(files), dest_folder)
 
-
-            rsync_file_list = tmp_folder / f"rsync_fl{dest_folder.replace("/","_")}.txt"
+            rsync_file_list = tmp_folder / f"rsync_fl{dest_folder.replace('/', '_')}.txt"
             logger.info("Rsync file list: %s", rsync_file_list)
 
             with rsync_file_list.open("w") as f:
                 for file in files:
                     f.write(f"{file}\n")
 
-            rsync_cmd = [
+            rsync_options = "-av"
+            if self.dry_run:
+                rsync_options = rsync_options + "n"
+
+            rsync_cmd = (
                 "rsync",
                 "-av",
                 "--info=progress2",
                 f"--files-from={rsync_file_list}",
                 f"{self.rsync_host_str}{dest_folder}",
-            ]
-
-            if self.dry_run:
-                rsync_cmd[1] = rsync_cmd[1] + "n"
+            )
 
             logger.info("Rsync command: %s", " ".join(rsync_cmd))
 
             if not self.no_run:
-                logger.info("Running for real")
+                logger.info("Running rsync")
+                proc = subprocess.run(rsync_cmd)
+
+            quit()
 
     def _get_file_list(self) -> None:
         all_files = Path(self.local_dir).rglob("*")
