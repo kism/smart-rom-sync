@@ -51,6 +51,8 @@ def main() -> None:
         path=target_tmp.get("path", ""),
     )
 
+    stats = []
+
     systems = config.get("systems", [])
 
     for system_def_raw in systems:
@@ -67,7 +69,11 @@ def main() -> None:
         logger.info("Processing %s...", system_def["local_dir"])
         system = SystemSync(system_def=system_def, target_def=target, dry_run=args.dry_run, no_run=args.no_run)
         system.print_summary()
-        system.rsync()
+        stats.append(system.rsync())
+
+    logger.info("Stats:")
+    for stat in stats:
+        logger.info(stat)
 
 
 if __name__ == "__main__":

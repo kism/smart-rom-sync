@@ -95,11 +95,13 @@ class SystemSync:
         """Print a summary of the sync object."""
         logger.info("Found %s folders to push to", len(self.rsync_inputs.keys()))
 
-    def rsync(self) -> None:
+    def rsync(self) -> str:
         """Run the rsync command to sync the files."""
         tmp_folder = get_system_temp_folder()
+        stats: str = f"  {self.local_dir} -> {self.remote_dir_full}\n"
 
         for dest_folder, files in self.rsync_inputs.items():
+            stats += f"    {dest_folder}: {len(files)} files\n"
             logger.info("Syncing %s files to %s...", len(files), dest_folder)
 
             rsync_file_list = tmp_folder / f"rsync_fl{dest_folder.replace('/', '_')}.txt"
@@ -143,6 +145,8 @@ class SystemSync:
 
                 subprocess.run(rsync_cmd)
                 logger.info("Rsync completed!")
+
+        return stats
 
     def _get_file_list(self) -> None:
         if not self.local_dir.is_dir():
