@@ -29,6 +29,21 @@ class ConfigDef(TypedDict):
     target: TargetDef
     systems: list[SystemDef]
 
+    def __init__(self, target: TargetDef, systems: list[SystemDef]) -> None:
+
+        self.target = target
+        self.systems = systems
+
+    def validate(self) -> None:
+        """Validate the configuration."""
+        if not self["target"]["path"]:
+            raise ValueError("Target path is required.")
+        if not self["systems"]:
+            raise ValueError("At least one system definition is required.")
+        for system in self["systems"]:
+            if not system["local_dir"] or not system["remote_dir"]:
+                raise ValueError("Local and remote directories are required for each system.")
+
 
 class ReleaseInfo(TypedDict):
     """Release information for a file."""
