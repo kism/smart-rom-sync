@@ -15,7 +15,7 @@ def load_config_from_toml(config_file: Path) -> ConfigDef:
     with config_file.open("rb") as f:
         config_toml = tomllib.load(f)
 
-    target_tmp = config_toml.get("target", [])
+    target_tmp = config_toml.get("target", {})
 
     target: TargetDef = TargetDef(
         type=target_tmp.get("type", ""),

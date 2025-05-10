@@ -43,15 +43,11 @@ def main() -> None:
     args = parser.parse_args()
     config_file = Path(args.config_file)
 
-
-
     config = load_config_from_toml(config_file)
-
 
     stats = []
 
-
-    for system_def_raw in systems:
+    for system_def_raw in config["systems"]:
         print()  # noqa: T201 # Just to make the output nicer
         system_def = SystemDef(
             local_dir=Path(system_def_raw["local_dir"]),
