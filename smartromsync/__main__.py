@@ -1,13 +1,11 @@
 """Main entry point for the smart-rom-sync program."""
 
 import argparse
-import tomllib
 from pathlib import Path
 
 from .logger import get_logger, setup_logger
 from .sy_config import load_config_from_toml
 from .sy_sync import SystemSync
-from .sy_types import SystemDef, TargetDef
 
 logger = get_logger(__name__)
 

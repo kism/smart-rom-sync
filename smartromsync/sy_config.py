@@ -29,9 +29,12 @@ def load_config_from_toml(config_file: Path) -> ConfigDef:
     systems_list = []
 
     for system_def_raw in systems_temp:
+        local_dir: Path | None = system_def_raw.get("local_dir", None)
+        remote_dir: Path | None = system_def_raw.get("remote_dir", None)
+
         system_def = SystemDef(
-            local_dir=Path(system_def_raw["local_dir"], None),
-            remote_dir=Path(system_def_raw["remote_dir"], None),
+            local_dir=local_dir,
+            remote_dir=remote_dir,
             region_list_include=system_def_raw.get("region_list_include", []),
             region_list_exclude=system_def_raw.get("region_list_exclude", []),
             special_list_include=system_def_raw.get("special_list_include", []),
