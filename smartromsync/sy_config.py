@@ -16,15 +16,13 @@ class ConfigDef:
         systems: list[SystemDef] | None = None,
     ) -> None:
         """Initialize the configuration with target and systems."""
-        if isinstance(config_file_path, Path):
-            target, systems = self.load_config_from_toml(config_file_path)
-        else:
-            self.target = target
-            self.systems = systems
+        self.target = target
+        self.systems = systems
 
-        if not target or not systems:
-            msg = "Path to a configuration file must be provided."
-            raise ValueError(msg)
+        if isinstance(config_file_path, Path):
+            self.target, self.systems = self.load_config_from_toml(config_file_path)
+
+        self.validate()
 
     def load_config_from_toml(self, config_file: Path) -> tuple[TargetDef, list[SystemDef]]:
         """Load the configuration from a TOML file."""
