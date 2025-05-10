@@ -3,6 +3,8 @@
 import tomllib
 from pathlib import Path
 
+import tomlkit
+
 from .sy_types import SystemDef, TargetDef
 
 
@@ -21,6 +23,9 @@ class ConfigDef:
 
         if isinstance(config_file_path, Path):
             self.target, self.systems = self.load_config_from_toml(config_file_path)
+
+        if config_file_path:
+            self.write_config_to_toml(config_file_path)
 
         self.validate()
 
@@ -61,6 +66,16 @@ class ConfigDef:
             systems_list.append(system_def)
 
         return target, systems_list
+
+    def write_config_to_toml(self, config_file: Path) -> None:
+        """Write the configuration to a TOML file."""
+        temp_dict = {
+            "target": self.target,
+            "systems": self.systems,
+        }
+
+        with config_file.open("w") as f:
+            tomlkit.dump(temp_dict, f)
 
     def validate(self) -> None:
         """Validate the configuration."""

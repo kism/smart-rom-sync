@@ -1,0 +1,5 @@
+systems = []
+[target]
+type = "local"
+rsync_host = ""
+path = ""
