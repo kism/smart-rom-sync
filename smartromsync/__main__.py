@@ -51,7 +51,7 @@ def main() -> None:
         print()  # noqa: T201 # Just to make the output nicer
 
         logger.info("Processing %s...", system_def["local_dir"])
-        system = SystemSync(system_def=system_def, target_def=target, dry_run=args.dry_run, no_run=args.no_run)
+        system = SystemSync(system_def=system_def, target_def=config.target, dry_run=args.dry_run, no_run=args.no_run)
         system.print_summary()
         stats.append(system.rsync())
 
