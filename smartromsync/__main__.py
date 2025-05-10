@@ -5,6 +5,7 @@ import tomllib
 from pathlib import Path
 
 from .logger import get_logger, setup_logger
+from .sy_config import load_config_from_toml
 from .sy_sync import SystemSync
 from .sy_types import SystemDef, TargetDef
 
@@ -42,18 +43,13 @@ def main() -> None:
     args = parser.parse_args()
     config_file = Path(args.config_file)
 
-    with config_file.open("rb") as f:
-        config = tomllib.load(f)
-    target_tmp = config.get("target", [])
-    target: TargetDef = TargetDef(
-        type=target_tmp.get("type", ""),
-        rsync_host=target_tmp.get("rsync_host", ""),
-        path=target_tmp.get("path", ""),
-    )
+
+
+    config = load_config_from_toml(config_file)
+
 
     stats = []
 
-    systems = config.get("systems", [])
 
     for system_def_raw in systems:
         print()  # noqa: T201 # Just to make the output nicer
