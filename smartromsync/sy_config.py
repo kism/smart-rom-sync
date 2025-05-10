@@ -18,11 +18,15 @@ class ConfigDef:
         systems: list[SystemDef] | None = None,
     ) -> None:
         """Initialize the configuration with target and systems."""
-        self.target = target
-        self.systems = systems
-
         if isinstance(config_file_path, Path):
-            self.target, self.systems = self.load_config_from_toml(config_file_path)
+            target, systems = self.load_config_from_toml(config_file_path)
+
+        if target and systems:
+            self.target = target
+            self.systems = systems
+        else:
+            msg = "No target or systems provided."
+            raise ValueError(msg)
 
         if config_file_path:
             self.write_config_to_toml(config_file_path)
