@@ -66,13 +66,14 @@ class ConfigDef:
         """Validate the configuration."""
         errors = []
 
-        if not self.target["path"]:
+        if not self.target or not self.target["path"]:
             errors.append("Target path is required.")
         if not self.systems:
             errors.append("At least one system is required.")
-        for n, system in enumerate(self.systems):
-            if not system["local_dir"] or not system["remote_dir"]:
-                errors.append(f"System {n} Both local and remote directories are required.")
+        else:
+            for n, system in enumerate(self.systems):
+                if not system["local_dir"] or not system["remote_dir"]:
+                    errors.append(f"System {n} Both local and remote directories are required.")
 
         if errors:
             msg = "Configuration validation failed! \n  " + "\n  ".join(errors)
