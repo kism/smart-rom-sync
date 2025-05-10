@@ -24,21 +24,21 @@ def load_config_from_toml(config_file: Path) -> ConfigDef:
         path=target_tmp.get("path", ""),
     )
 
-    config: ConfigDef = ConfigDef(target=target, systems=[])
+    systems_temp = config_toml.get("systems", [])
 
-    systems = config_toml.get("systems", [])
+    systems_list = []
 
-    for system_def_raw in systems:
+    for system_def_raw in systems_temp:
         system_def = SystemDef(
-            local_dir=Path(system_def_raw["local_dir"]),
-            remote_dir=Path(system_def_raw["remote_dir"]),
+            local_dir=Path(system_def_raw["local_dir"], None),
+            remote_dir=Path(system_def_raw["remote_dir"], None),
             region_list_include=system_def_raw.get("region_list_include", []),
             region_list_exclude=system_def_raw.get("region_list_exclude", []),
             special_list_include=system_def_raw.get("special_list_include", []),
             special_list_exclude=system_def_raw.get("special_list_exclude", []),
         )
-        config["systems"].append(system_def)
+        systems_list.append(system_def)
 
-    config.validate()
+    config: ConfigDef = ConfigDef(target=target, systems=systems_list)
 
     return config

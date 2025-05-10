@@ -47,16 +47,8 @@ def main() -> None:
 
     stats = []
 
-    for system_def_raw in config["systems"]:
+    for system_def in config.systems:
         print()  # noqa: T201 # Just to make the output nicer
-        system_def = SystemDef(
-            local_dir=Path(system_def_raw["local_dir"]),
-            remote_dir=Path(system_def_raw["remote_dir"]),
-            region_list_include=system_def_raw.get("region_list_include", []),
-            region_list_exclude=system_def_raw.get("region_list_exclude", []),
-            special_list_include=system_def_raw.get("special_list_include", []),
-            special_list_exclude=system_def_raw.get("special_list_exclude", []),
-        )
 
         logger.info("Processing %s...", system_def["local_dir"])
         system = SystemSync(system_def=system_def, target_def=target, dry_run=args.dry_run, no_run=args.no_run)
