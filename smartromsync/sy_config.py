@@ -1,102 +1,124 @@
-"""Functions to load and parse the configuration file."""
+"""Config loading, setup, validating, writing."""
 
+import json
 from pathlib import Path
+from typing import Any
 
 import tomlkit
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from .sy_types import SystemDef, TargetDef
+from .logger import get_logger
+
+# Logging should be all done at INFO level or higher as the log level hasn't been set yet
+# Modules should all setup logging like this so the log messages include the modules name.
+logger = get_logger(__name__)
 
 
-class ConfigDef:
-    """Configuration definition for the sync tool."""
+class TargetDef(BaseModel):
+    """Flask configuration definition."""
 
-    def __init__(
-        self,
-        config_file_path: Path | None = None,
-        target: TargetDef | None = None,
-        systems: list[SystemDef] | None = None,
-    ) -> None:
-        """Initialize the configuration with target and systems."""
-        if isinstance(config_file_path, Path):
-            target, systems = self.load_config_from_toml(config_file_path)
+    type: str = "remote"
+    rsync_host: str = ""
+    path: Path = Path()
 
-        if target and systems:  # This validation is done early to appease mypy
-            self.target = target
-            self.systems = systems
-        else:
-            msg = "No target or systems provided."
-            raise ValueError(msg)
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401 # Don't know how to avoid this
+        """Initialize the configuration and validate it."""
+        super().__init__(**kwargs)
+        self.custom_validate()
 
-        if config_file_path:
-            self.write_config_to_toml(config_file_path)
-
-        self.validate()
-
-    def load_config_from_toml(self, config_file: Path) -> tuple[TargetDef, list[SystemDef]]:
-        """Load the configuration from a TOML file."""
-        config_error: str = ""
-
-        if not config_file.exists():
-            config_error += f"Config file {config_file} does not exist.\n"
-
-        with config_file.open("rb") as f:
-            config_toml = tomlkit.load(f)
-
-        target_tmp = config_toml.get("target", {})
-
-        target: TargetDef = TargetDef(
-            type=target_tmp.get("type", "local"),  # local, remote
-            rsync_host=target_tmp.get("rsync_host", ""),  # user@host
-            path=target_tmp.get("path", ""),
-        )
-
-        systems_temp = config_toml.get("systems", [])
-
-        systems_list = []
-
-        for system_def_raw in systems_temp:
-            # The things I do for mypy
-            local_dir_raw: Path | None = system_def_raw.get("local_dir", None)
-            remote_dir_raw: Path | None = system_def_raw.get("remote_dir", None)
-
-            local_dir = Path(local_dir_raw) if local_dir_raw else None
-            remote_dir = Path(remote_dir_raw) if remote_dir_raw else None
-
-            system_def = SystemDef(
-                local_dir=local_dir,
-                remote_dir=remote_dir,
-                region_list_include=system_def_raw.get("region_list_include", []),
-                region_list_exclude=system_def_raw.get("region_list_exclude", []),
-                special_list_include=system_def_raw.get("special_list_include", []),
-                special_list_exclude=system_def_raw.get("special_list_exclude", []),
-            )
-            systems_list.append(system_def)
-
-        return target, systems_list
-
-    def write_config_to_toml(self, config_file: Path) -> None:
-        """Write the configuration to a TOML file."""
-        temp_dict = {
-            "target": self.target,
-            "systems": self.systems,
-        }
-
-        with config_file.open("w") as f:
-            tomlkit.dump(temp_dict, f)
-
-    def validate(self) -> None:
+    def custom_validate(self) -> None:
         """Validate the configuration."""
-        errors = []
+        if self.type not in ["remote", "local"]:
+            msg = f"Invalid target type: {self.type}. Must be 'remote' or 'local'."
+            logger.error(msg)
 
-        if not self.target["path"]:
-            errors.append("Target path is required.")
-        if not self.systems:
-            errors.append("At least one system is required.")
-        else:
-            for n, system in enumerate(self.systems):
-                if not system["local_dir"] or not system["remote_dir"]:
-                    errors.append(f"System {n} Both local and remote directories are required.")
 
-        if errors:
-            msg = "Configuration validation failed! \n  " + "\n  ".join(errors)
-            raise ValueError(msg)
+class SystemDef(BaseModel):
+    """Application configuration definition."""
+
+    local_dir: Path = Path()
+    remote_dir: Path = Path()
+    region_list_include: list[str] = []
+    region_list_exclude: list[str] = []
+    special_list_include: list[str] = []
+    special_list_exclude: list[str] = []
+
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401 # Don't know how to avoid this
+        """Initialize the configuration and validate it."""
+        super().__init__(**kwargs)
+        self.custom_validate()
+
+    def custom_validate(self) -> None:
+        """Validate the configuration."""
+        if self.local_dir == self.remote_dir:
+            msg = "local_dir and remote_dir cannot be the same."
+            logger.error(msg)
+
+
+class ConfigDef(BaseSettings):
+    """Settings loaded from a TOML file."""
+
+    # Default values for our settings
+    target: TargetDef = TargetDef()
+    systems: list[SystemDef] = []
+
+    # Custom path for the config file
+    config_path: Path = Path()
+
+    # Configure settings class
+    model_config = SettingsConfigDict(
+        env_prefix="APP_",  # environment variables with APP_ prefix will override settings
+        env_nested_delimiter="__",  # APP_NESTED__NESTED_FIELD=value
+        json_encoders={Path: str},
+    )
+
+    def __init__(self, instance_path: Path) -> None:
+        """Initialize settings and load from a TOML file if provided.
+
+        Args:
+            instance_path (str): Path to load config.toml
+        """
+        # Initialize with default values first
+        super().__init__()
+
+        self.config_path = Path(instance_path / "config.toml")
+        self._load_from_toml()
+        self.custom_validate()
+        self.write_config()
+
+    def _load_from_toml(self) -> None:
+        """Load settings from the TOML file specified in config_path."""
+        if self.config_path.is_file():
+            with self.config_path.open("r") as f:
+                config_data = tomlkit.load(f)
+
+            # Update our settings from the loaded data
+            for key, value in config_data.items():
+                if key == "target" and isinstance(value, dict):
+                    self.flask = TargetDef(**value)
+                elif key == "systems" and isinstance(value, dict):
+                    self.systems = [SystemDef(**system) for system in value]
+
+                elif hasattr(self, key):
+                    setattr(self, key, value)
+
+    def custom_validate(self) -> None:
+        """Validate the loaded settings."""
+        self.target.custom_validate()
+
+        for system in self.systems:
+            system.custom_validate()
+
+    def write_config(self) -> None:
+        """Write the current settings to a TOML file."""
+        logger.info("Writing config to %s", self.config_path)
+        config_data = json.loads(self.model_dump_json())  # This is how we make the object safe for tomlkit
+        config_data.pop("config_path", None)  # Remove config_path from the data to be written
+
+        # Write to the TOML file
+        if not self.config_path.parent.exists():
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with self.config_path.open("w") as f:
+            tomlkit.dump(config_data, f)
