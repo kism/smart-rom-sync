@@ -3,11 +3,17 @@
 import re
 import subprocess
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from .logger import get_logger
 from .sy_helpers import get_system_temp_folder
-from .sy_types import ReleaseInfo, SystemDef, TargetDef
+from .sy_types import ReleaseInfo
+
+if TYPE_CHECKING:
+    from .sy_config import SystemDef, TargetDef
+else:
+    SystemDef = object
+    TargetDef = object
 
 logger = get_logger(__name__)
 

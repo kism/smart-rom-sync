@@ -73,7 +73,7 @@ class ConfigDef(BaseSettings):
         json_encoders={Path: str},
     )
 
-    def __init__(self, instance_path: Path) -> None:
+    def __init__(self, config_path: Path) -> None:
         """Initialize settings and load from a TOML file if provided.
 
         Args:
@@ -82,7 +82,7 @@ class ConfigDef(BaseSettings):
         # Initialize with default values first
         super().__init__()
 
-        self.config_path = Path(instance_path / "config.toml")
+        self.config_path = config_path
         self._load_from_toml()
         self.custom_validate()
         self.write_config()
@@ -96,7 +96,7 @@ class ConfigDef(BaseSettings):
             # Update our settings from the loaded data
             for key, value in config_data.items():
                 if key == "target" and isinstance(value, dict):
-                    self.flask = TargetDef(**value)
+                    self.target = TargetDef(**value)
                 elif key == "systems" and isinstance(value, dict):
                     self.systems = [SystemDef(**system) for system in value]
 
