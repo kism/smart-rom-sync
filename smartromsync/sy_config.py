@@ -1,6 +1,5 @@
 """Functions to load and parse the configuration file."""
 
-import tomllib
 from pathlib import Path
 
 import tomlkit
@@ -21,7 +20,7 @@ class ConfigDef:
         if isinstance(config_file_path, Path):
             target, systems = self.load_config_from_toml(config_file_path)
 
-        if target and systems:
+        if target and systems:  # This validation is done early to appease mypy
             self.target = target
             self.systems = systems
         else:
@@ -41,7 +40,7 @@ class ConfigDef:
             config_error += f"Config file {config_file} does not exist.\n"
 
         with config_file.open("rb") as f:
-            config_toml = tomllib.load(f)
+            config_toml = tomlkit.load(f)
 
         target_tmp = config_toml.get("target", {})
 
@@ -56,8 +55,12 @@ class ConfigDef:
         systems_list = []
 
         for system_def_raw in systems_temp:
-            local_dir: Path | None = system_def_raw.get("local_dir", None)
-            remote_dir: Path | None = system_def_raw.get("remote_dir", None)
+            # The things I do for mypy
+            local_dir_raw: Path | None = system_def_raw.get("local_dir", None)
+            remote_dir_raw: Path | None = system_def_raw.get("remote_dir", None)
+
+            local_dir = Path(local_dir_raw) if local_dir_raw else None
+            remote_dir = Path(remote_dir_raw) if remote_dir_raw else None
 
             system_def = SystemDef(
                 local_dir=local_dir,
@@ -85,7 +88,7 @@ class ConfigDef:
         """Validate the configuration."""
         errors = []
 
-        if not self.target or not self.target["path"]:
+        if not self.target["path"]:
             errors.append("Target path is required.")
         if not self.systems:
             errors.append("At least one system is required.")
