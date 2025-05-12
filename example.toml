@@ -1,12 +1,11 @@
 [target]
 type = "remote"
 rsync_host = "root@mrpi.kg.lan"
-path = "/media/fat/"
+path = "/media/fat"
 
-# Game Boy
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Game Boy"
-remote_dir = "/games/GB/"
+remote_dir = "/games/GB"
 region_list_include = ["USA", "Japan", "Europe"]
 region_list_exclude = []
 special_list_include = []
@@ -14,16 +13,15 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Game Boy"
-remote_dir = "/games/GB/"
+remote_dir = "/games/GB"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# Game Boy Colour
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Game Boy Color"
-remote_dir = "/games/GBC/"
+remote_dir = "/games/GBC"
 region_list_include = ["USA", "Japan", "Europe"]
 region_list_exclude = []
 special_list_include = []
@@ -31,17 +29,15 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Game Boy Color"
-remote_dir = "/games/GBC/"
+remote_dir = "/games/GBC"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-
-# Game Boy Advance
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Game Boy Advance"
-remote_dir = "/games/GBA/"
+remote_dir = "/games/GBA"
 region_list_include = ["USA", "Japan", "Europe"]
 region_list_exclude = []
 special_list_include = []
@@ -49,17 +45,7 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Game Boy Advance"
-remote_dir = "/games/GBA/"
-region_list_include = []
-region_list_exclude = []
-special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
-special_list_exclude = []
-
-
-# Nintendo 64
-[[systems]]
-local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Nintendo 64 (BigEndian)"
-remote_dir = "/games/N64/"
+remote_dir = "/games/GBA"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
@@ -67,33 +53,39 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Nintendo 64 (BigEndian)"
-remote_dir = "/games/N64/"
-region_list_include = ["USA"]
-region_list_exclude = []
-special_list_include = []
-special_list_exclude = []
-
-# SNES
-[[systems]]
-local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Super Nintendo Entertainment System"
-remote_dir = "/games/SNES/"
-region_list_include = ["USA"]
-region_list_exclude = []
-special_list_include = []
-special_list_exclude = []
-
-[[systems]]
-local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Super Nintendo Entertainment System"
-remote_dir = "/games/SNES/"
+remote_dir = "/games/N64"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# NES
+[[systems]]
+local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Nintendo 64 (BigEndian)"
+remote_dir = "/games/N64"
+region_list_include = ["USA"]
+region_list_exclude = []
+special_list_include = []
+special_list_exclude = []
+
+[[systems]]
+local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Super Nintendo Entertainment System"
+remote_dir = "/games/SNES"
+region_list_include = ["USA"]
+region_list_exclude = []
+special_list_include = []
+special_list_exclude = []
+
+[[systems]]
+local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Super Nintendo Entertainment System"
+remote_dir = "/games/SNES"
+region_list_include = []
+region_list_exclude = []
+special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
+special_list_exclude = []
+
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Nintendo Entertainment System (Headered)"
-remote_dir = "/games/NES/"
+remote_dir = "/games/NES"
 region_list_include = ["USA"]
 region_list_exclude = []
 special_list_include = []
@@ -101,25 +93,23 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Nintendo - Nintendo Entertainment System (Headered)"
-remote_dir = "/games/NES/"
+remote_dir = "/games/NES"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# Turbo Grafx 16
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/NEC - PC Engine - TurboGrafx-16"
-remote_dir = "/games/TGFX16/"
+remote_dir = "/games/TGFX16"
 region_list_include = []
 region_list_exclude = []
 special_list_include = []
 special_list_exclude = []
 
-# Sega Mega Drive / Genesis
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Sega - Mega Drive - Genesis"
-remote_dir = "/games/MegaDrive/"
+remote_dir = "/games/MegaDrive"
 region_list_include = ["USA"]
 region_list_exclude = []
 special_list_include = []
@@ -127,26 +117,23 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Sega - Mega Drive - Genesis"
-remote_dir = "/games/MegaDrive/"
+remote_dir = "/games/MegaDrive"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# Sega 32X
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Sega - 32X"
-remote_dir = "/games/S32X/"
+remote_dir = "/games/S32X"
 region_list_include = []
 region_list_exclude = []
 special_list_include = []
 special_list_exclude = []
 
-
-# Sega Master System
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Sega - Master System - Mark III"
-remote_dir = "/games/SMS/"
+remote_dir = "/games/SMS"
 region_list_include = ["USA"]
 region_list_exclude = []
 special_list_include = []
@@ -154,16 +141,15 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Sega - Master System - Mark III"
-remote_dir = "/games/SMS/"
+remote_dir = "/games/SMS"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# Neo Geo Pocket
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/SNK - NeoGeo Pocket"
-remote_dir = "/games/NeoGeoPocket/"
+remote_dir = "/games/NeoGeoPocket"
 region_list_include = []
 region_list_exclude = []
 special_list_include = []
@@ -171,16 +157,15 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/SNK - NeoGeo Pocket"
-remote_dir = "/games/NeoGeoPocket/"
+remote_dir = "/games/NeoGeoPocket"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# Neo Geo Pocket Color
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/SNK - NeoGeo Pocket Color"
-remote_dir = "/games/NGPC/"
+remote_dir = "/games/NGPC"
 region_list_include = []
 region_list_exclude = []
 special_list_include = []
@@ -188,16 +173,15 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/SNK - NeoGeo Pocket Color"
-remote_dir = "/games/NGPC/"
+remote_dir = "/games/NGPC"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# Sega Game Gear
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Sega - Game Gear"
-remote_dir = "/games/GameGear/"
+remote_dir = "/games/GameGear"
 region_list_include = ["USA"]
 region_list_exclude = []
 special_list_include = []
@@ -205,34 +189,31 @@ special_list_exclude = []
 
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Sega - Game Gear"
-remote_dir = "/games/GameGear/"
+remote_dir = "/games/GameGear"
 region_list_include = []
 region_list_exclude = []
 special_list_include = ["Unlicensed", "Unl", "Aftermarket"]
 special_list_exclude = []
 
-# Wonderswan
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Bandai - WonderSwan"
-remote_dir = "/games/WonderSwan/"
+remote_dir = "/games/WonderSwan"
 region_list_include = []
 region_list_exclude = []
 special_list_include = []
 special_list_exclude = []
 
-# Wonderswan Color
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Bandai - WonderSwan Color"
-remote_dir = "/games/WonderSwanColor/"
+remote_dir = "/games/WonderSwanColor"
 region_list_include = []
 region_list_exclude = []
 special_list_include = []
 special_list_exclude = []
 
-# Atari ST
 [[systems]]
 local_dir = "/srv/Garnet/ROMs/No-Intro/Atari - ST"
-remote_dir = "/games/AtariST/"
+remote_dir = "/games/AtariST"
 region_list_include = []
 region_list_exclude = []
 special_list_include = []

@@ -72,28 +72,17 @@ class SystemSync:
 
         self.target_def = target_def
         self.rsync_host_str: str = ""
-        if self.target_def["type"] == "remote":
-            self.rsync_host_str = f"{self.target_def['rsync_host']}"
-
-        local_dir: Path | None = system_def.get("local_dir")
-        if not local_dir:
-            msg = "local_dir is required"
-            raise ValueError(msg)
-        self.local_dir = local_dir
-
-        remote_dir: Path | None = system_def.get("remote_dir")
-        if not remote_dir:
-            msg = "remote_dir is required"
-            raise ValueError(msg)
+        if self.target_def.type != "local":
+            self.rsync_host_str = f"{self.target_def.remote_host}"
 
         self.remote_dir = remote_dir
-        self.remote_dir_full = str(Path(f"{self.target_def['path']}/{self.remote_dir}"))
+        self.remote_dir_full = str(self.target_def.path / self.remote_dir)
 
-        self.region_list_include: list[str] = system_def.get("region_list_include", [])
-        self.region_list_exclude: list[str] = system_def.get("region_list_exclude", [])
+        self.region_list_include: list[str] = system_def.region_list_include
+        self.region_list_exclude: list[str] = system_def.region_list_exclude
 
-        self.special_list_include: list[str] = system_def.get("special_list_include", [])
-        self.special_list_exclude: list[str] = system_def.get("special_list_exclude", [])
+        self.special_list_include: list[str] = system_def.special_list_include
+        self.special_list_exclude: list[str] = system_def.special_list_exclude
 
         self.rsync_inputs: dict[str, list[str]] = self._get_files_to_push()
 

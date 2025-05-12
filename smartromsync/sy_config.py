@@ -18,8 +18,8 @@ logger = get_logger(__name__)
 class TargetDef(BaseModel):
     """Flask configuration definition."""
 
-    type: str = "remote"
-    rsync_host: str = ""
+    type: str = "local"
+    remote_host: str = ""
     path: Path = Path()
 
     def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401 # Don't know how to avoid this
@@ -29,7 +29,7 @@ class TargetDef(BaseModel):
 
     def custom_validate(self) -> None:
         """Validate the configuration."""
-        if self.type not in ["remote", "local"]:
+        if self.type not in ["rsync", "local"]:
             msg = f"Invalid target type: {self.type}. Must be 'remote' or 'local'."
             logger.error(msg)
 
@@ -97,9 +97,8 @@ class ConfigDef(BaseSettings):
             for key, value in config_data.items():
                 if key == "target" and isinstance(value, dict):
                     self.target = TargetDef(**value)
-                elif key == "systems" and isinstance(value, dict):
+                elif key == "systems" and isinstance(value, list):
                     self.systems = [SystemDef(**system) for system in value]
-
                 elif hasattr(self, key):
                     setattr(self, key, value)
 
