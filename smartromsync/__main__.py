@@ -45,13 +45,13 @@ def main() -> None:
 
     stats = []
 
-    for system_def in config.systems:
+    for system in config.systems:
         print()  # noqa: T201 # Just to make the output nicer
 
-        logger.info("Processing %s...", system_def.local_dir)
-        system = SystemSync(system_def=system_def, target_def=config.target, dry_run=args.dry_run, no_run=args.no_run)
-        system.print_summary()
-        stats.append(system.rsync())
+        logger.info("Processing %s...", system.local_dir)
+        system_sync = SystemSync(system=system, target=config.target, dry_run=args.dry_run, no_run=args.no_run)
+        system_sync.print_summary()
+        stats.append(system_sync.rsync())
 
     logger.info("Stats:")
     for stat in stats:

@@ -15,7 +15,7 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 
-class TargetDef(BaseModel):
+class Target(BaseModel):
     """Flask configuration definition."""
 
     type: str = "local"
@@ -34,7 +34,7 @@ class TargetDef(BaseModel):
             logger.error(msg)
 
 
-class SystemDef(BaseModel):
+class System(BaseModel):
     """Application configuration definition."""
 
     local_dir: Path = Path()
@@ -60,8 +60,8 @@ class ConfigDef(BaseSettings):
     """Settings loaded from a TOML file."""
 
     # Default values for our settings
-    target: TargetDef = TargetDef()
-    systems: list[SystemDef] = []
+    target: Target = Target()
+    systems: list[System] = []
 
     # Custom path for the config file
     config_path: Path = Path()
@@ -77,7 +77,7 @@ class ConfigDef(BaseSettings):
         """Initialize settings and load from a TOML file if provided.
 
         Args:
-            instance_path (str): Path to load config.toml
+            config_path (Path): Path to load config.toml
         """
         # Initialize with default values first
         super().__init__()
@@ -96,9 +96,9 @@ class ConfigDef(BaseSettings):
             # Update our settings from the loaded data
             for key, value in config_data.items():
                 if key == "target" and isinstance(value, dict):
-                    self.target = TargetDef(**value)
+                    self.target = Target(**value)
                 elif key == "systems" and isinstance(value, list):
-                    self.systems = [SystemDef(**system) for system in value]
+                    self.systems = [System(**system) for system in value]
                 elif hasattr(self, key):
                     setattr(self, key, value)
 

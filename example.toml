@@ -1,6 +1,6 @@
 [target]
 type = "remote"
-rsync_host = "root@mrpi.kg.lan"
+remote_host = "root@mrpi.kg.lan"
 path = "/media/fat"
 
 [[systems]]

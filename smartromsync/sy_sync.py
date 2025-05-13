@@ -3,19 +3,27 @@
 import re
 import subprocess
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, TypedDict
 
 from .logger import get_logger
 from .sy_helpers import get_system_temp_folder
-from .sy_types import ReleaseInfo
 
 if TYPE_CHECKING:
-    from .sy_config import SystemDef, TargetDef
+    from .sy_config import System, Target
 else:
-    SystemDef = object
-    TargetDef = object
+    System = object
+    Target = object
 
 logger = get_logger(__name__)
+
+
+class ReleaseInfo(TypedDict):
+    """Release information for a file."""
+
+    region_dir: str
+    region_full: str
+    special: str | None
+    extra_info: list[str]
 
 
 class SystemSync:
@@ -62,27 +70,19 @@ class SystemSync:
         "Denmark",
     ]
 
-    def __init__(
-        self, system_def: SystemDef, target_def: TargetDef, *, dry_run: bool = False, no_run: bool = False
-    ) -> None:
+    def __init__(self, system: System, target: Target, *, dry_run: bool = False, no_run: bool = False) -> None:
         """Initialize the sync object with the system and target definitions."""
         self.all_files: list[Path] = []
         self.dry_run = dry_run
         self.no_run = no_run
 
-        self.target_def = target_def
+        self.system: System = system
+        self.target: Target = target
         self.rsync_host_str: str = ""
-        if self.target_def.type != "local":
-            self.rsync_host_str = f"{self.target_def.remote_host}"
+        if self.target.type != "local":
+            self.rsync_host_str = f"{self.target.remote_host}"
 
-        self.remote_dir = remote_dir
-        self.remote_dir_full = str(self.target_def.path / self.remote_dir)
-
-        self.region_list_include: list[str] = system_def.region_list_include
-        self.region_list_exclude: list[str] = system_def.region_list_exclude
-
-        self.special_list_include: list[str] = system_def.special_list_include
-        self.special_list_exclude: list[str] = system_def.special_list_exclude
+        self.remote_dir_full = str(self.target.path / system.remote_dir)
 
         self.rsync_inputs: dict[str, list[str]] = self._get_files_to_push()
 
@@ -93,7 +93,7 @@ class SystemSync:
     def rsync(self) -> str:
         """Run the rsync command to sync the files."""
         tmp_folder = get_system_temp_folder()
-        stats: str = f"  {self.local_dir} -> {self.remote_dir_full}\n"
+        stats: str = f"  {self.system.local_dir} -> {self.remote_dir_full}\n"
 
         for dest_folder, files in self.rsync_inputs.items():
             stats += f"    {dest_folder}: {len(files)} files\n"
@@ -120,7 +120,7 @@ class SystemSync:
                 "--info=progress2",
                 "--size-only",
                 f"--files-from={rsync_file_list}",
-                f"{self.local_dir}",
+                f"{self.system.local_dir}",
                 rsync_dest,
             )
 
@@ -136,21 +136,21 @@ class SystemSync:
                 if not self.dry_run:
                     # Create the remote directory if it doesn't exist
                     logger.info("Creating destination directory with command %s", mkdir_command)
-                    subprocess.run(mkdir_command)
+                    subprocess.run(mkdir_command, shell=False, check=True)
 
-                subprocess.run(rsync_cmd)
+                subprocess.run(rsync_cmd, shell=False, check=True)
                 logger.info("Rsync completed!")
 
         return stats
 
     def _get_file_list(self) -> None:
-        if not self.local_dir.is_dir():
-            logger.error("Local directory %s is not a directory", self.local_dir)
+        if not self.system.local_dir.is_dir():
+            logger.error("Local directory %s is not a directory", self.system.local_dir)
             return
 
-        all_files = Path(self.local_dir).rglob("*")
+        all_files = Path(self.system.local_dir).rglob("*")
         self.all_files = [f for f in all_files if f.is_file()]
-        logger.info("Found %s files in %s", len(self.all_files), self.local_dir)
+        logger.info("Found %s files in %s", len(self.all_files), self.system.local_dir)
 
     def _get_region(self, release_info_raw: list[str]) -> tuple[str, str, int | None]:
         # Check for exact match
@@ -214,13 +214,13 @@ class SystemSync:
 
     def _check_allowed_special(self, release_info: ReleaseInfo) -> bool:
         for extra_info in release_info["extra_info"]:
-            for special_to_exclude in self.special_list_exclude:
+            for special_to_exclude in self.system.special_list_exclude:
                 if special_to_exclude in extra_info:
                     return False
 
-        if self.special_list_include:
+        if self.system.special_list_include:
             for extra_info in release_info["extra_info"]:
-                for special_to_include in self.special_list_include:
+                for special_to_include in self.system.special_list_include:
                     if special_to_include in extra_info:
                         return True
             return False
@@ -228,13 +228,13 @@ class SystemSync:
         return True
 
     def _check_allowed_region(self, release_info: ReleaseInfo) -> bool:
-        for region in self.region_list_exclude:
+        for region in self.system.region_list_exclude:
             if region in release_info["region_full"]:
                 return False
 
-        if self.region_list_include:
+        if self.system.region_list_include:
             temp_region_list = []
-            temp_region_list.extend(self.region_list_include)
+            temp_region_list.extend(self.system.region_list_include)
             temp_region_list.extend(self.REGION_ALWAYS_ALLOWED)
             return any(region in release_info["region_full"] for region in temp_region_list)
 
