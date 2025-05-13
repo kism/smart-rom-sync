@@ -136,9 +136,9 @@ class SystemSync:
                 if not self.dry_run:
                     # Create the remote directory if it doesn't exist
                     logger.info("Creating destination directory with command %s", mkdir_command)
-                    subprocess.run(mkdir_command, shell=False, check=True)
+                    subprocess.run(mkdir_command, shell=False, check=True)  # noqa: S603
 
-                subprocess.run(rsync_cmd, shell=False, check=True)
+                subprocess.run(rsync_cmd, shell=False, check=True)  # noqa: S603
                 logger.info("Rsync completed!")
 
         return stats
