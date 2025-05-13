@@ -2,10 +2,10 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Self
 
 import tomlkit
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .logger import get_logger
@@ -22,16 +22,14 @@ class Target(BaseModel):
     remote_host: str = ""
     path: Path = Path()
 
-    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401 # Don't know how to avoid this
-        """Initialize the configuration and validate it."""
-        super().__init__(**kwargs)
-        self.custom_validate()
-
-    def custom_validate(self) -> None:
+    @model_validator(mode="after")
+    def custom_validate(self) -> Self:
         """Validate the configuration."""
         if self.type not in ["rsync", "local"]:
             msg = f"Invalid target type: {self.type}. Must be 'remote' or 'local'."
-            logger.error(msg)
+            raise ValueError(msg)
+
+        return self
 
 
 class System(BaseModel):
@@ -44,16 +42,14 @@ class System(BaseModel):
     special_list_include: list[str] = []
     special_list_exclude: list[str] = []
 
-    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401 # Don't know how to avoid this
-        """Initialize the configuration and validate it."""
-        super().__init__(**kwargs)
-        self.custom_validate()
-
-    def custom_validate(self) -> None:
+    @model_validator(mode="after")
+    def custom_validate(self) -> Self:
         """Validate the configuration."""
         if self.local_dir == self.remote_dir:
             msg = "local_dir and remote_dir cannot be the same."
-            logger.error(msg)
+            raise ValueError(msg)
+
+        return self
 
 
 class ConfigDef(BaseSettings):
@@ -84,7 +80,6 @@ class ConfigDef(BaseSettings):
 
         self.config_path = config_path
         self._load_from_toml()
-        self.custom_validate()
         self.write_config()
 
     def _load_from_toml(self) -> None:
@@ -105,13 +100,6 @@ class ConfigDef(BaseSettings):
                     self.systems = [System(**system) for system in value]
                 elif hasattr(self, key):
                     setattr(self, key, value)
-
-    def custom_validate(self) -> None:
-        """Validate the loaded settings."""
-        self.target.custom_validate()
-
-        for system in self.systems:
-            system.custom_validate()
 
     def write_config(self) -> None:
         """Write the current settings to a TOML file."""
