@@ -2,17 +2,19 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Self
 
 import tomlkit
-from pydantic import BaseModel
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource, TomlConfigSettingsSource
 
 from .logger import get_logger
 
 # Logging should be all done at INFO level or higher as the log level hasn't been set yet
 # Modules should all setup logging like this so the log messages include the modules name.
 logger = get_logger(__name__)
+
+CONFIG_LOCATION = Path() / "config.toml"
 
 
 class Target(BaseModel):
@@ -22,16 +24,13 @@ class Target(BaseModel):
     remote_host: str = ""
     path: Path = Path()
 
-    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401 # Don't know how to avoid this
-        """Initialize the configuration and validate it."""
-        super().__init__(**kwargs)
-        self.custom_validate()
-
-    def custom_validate(self) -> None:
+    @model_validator(mode="after")
+    def validate_config(self) -> Self:
         """Validate the configuration."""
         if self.type not in ["rsync", "local"]:
             msg = f"Invalid target type: {self.type}. Must be 'remote' or 'local'."
             logger.error(msg)
+        return self
 
 
 class System(BaseModel):
@@ -44,16 +43,14 @@ class System(BaseModel):
     special_list_include: list[str] = []
     special_list_exclude: list[str] = []
 
-    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401 # Don't know how to avoid this
-        """Initialize the configuration and validate it."""
-        super().__init__(**kwargs)
-        self.custom_validate()
-
-    def custom_validate(self) -> None:
+    @model_validator(mode="after")
+    def validate_config(self) -> Self:
         """Validate the configuration."""
         if self.local_dir == self.remote_dir:
             msg = "local_dir and remote_dir cannot be the same."
             logger.error(msg)
+
+        return self
 
 
 class ConfigDef(BaseSettings):
@@ -63,34 +60,29 @@ class ConfigDef(BaseSettings):
     target: Target = Target()
     systems: list[System] = []
 
-    # Custom path for the config file
-    config_path: Path = Path()
-
     # Configure settings class
     model_config = SettingsConfigDict(
         env_prefix="APP_",  # environment variables with APP_ prefix will override settings
         env_nested_delimiter="__",  # APP_NESTED__NESTED_FIELD=value
         json_encoders={Path: str},
+        toml_file=CONFIG_LOCATION,
     )
 
-    def __init__(self, config_path: Path) -> None:
-        """Initialize settings and load from a TOML file if provided.
-
-        Args:
-            config_path (Path): Path to load config.toml
-        """
-        # Initialize with default values first
-        super().__init__()
-
-        self.config_path = config_path
-        self._load_from_toml()
-        self.custom_validate()
-        self.write_config()
+    @classmethod  # This is magic, required and I don't understand it
+    def settings_customise_sources(  # noqa: D102
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        env_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        file_secret_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (TomlConfigSettingsSource(settings_cls),)
 
     def _load_from_toml(self) -> None:
         """Load settings from the TOML file specified in config_path."""
-        if self.config_path.is_file():
-            with self.config_path.open("r") as f:
+        if CONFIG_LOCATION.is_file():
+            with CONFIG_LOCATION.open("r") as f:
                 config_data = tomlkit.load(f)
 
             # Update our settings from the loaded data
@@ -102,22 +94,14 @@ class ConfigDef(BaseSettings):
                 elif hasattr(self, key):
                     setattr(self, key, value)
 
-    def custom_validate(self) -> None:
-        """Validate the loaded settings."""
-        self.target.custom_validate()
-
-        for system in self.systems:
-            system.custom_validate()
-
     def write_config(self) -> None:
         """Write the current settings to a TOML file."""
-        logger.info("Writing config to %s", self.config_path)
+        logger.info("Writing config to %s", CONFIG_LOCATION)
         config_data = json.loads(self.model_dump_json())  # This is how we make the object safe for tomlkit
-        config_data.pop("config_path", None)  # Remove config_path from the data to be written
 
         # Write to the TOML file
-        if not self.config_path.parent.exists():
-            self.config_path.parent.mkdir(parents=True, exist_ok=True)
+        if not CONFIG_LOCATION.parent.exists():
+            CONFIG_LOCATION.parent.mkdir(parents=True, exist_ok=True)
 
-        with self.config_path.open("w") as f:
+        with CONFIG_LOCATION.open("w") as f:
             tomlkit.dump(config_data, f)
