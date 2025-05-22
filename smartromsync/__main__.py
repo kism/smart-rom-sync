@@ -3,8 +3,9 @@
 import argparse
 from pathlib import Path
 
+from smartromsync.sy_config import load_config
+
 from .logger import get_logger, setup_logger
-from .sy_config import ConfigDef
 from .sy_sync import SystemSync
 
 logger = get_logger(__name__)
@@ -39,9 +40,11 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+
     config_file = Path(args.config_file)
 
-    config = ConfigDef(config_file)
+    config = load_config(config_file)
+    config.write_config(config_file)
 
     stats = []
 
