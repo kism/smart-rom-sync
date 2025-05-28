@@ -34,14 +34,16 @@ def main() -> None:
         help="Set the logging level (default: INFO)",
     )
     parser.add_argument(
-        "config_file",
+        "--config",
         type=str,
-        help="Path to the config file containing the list of ROMs.",
+        required=True,
+        default="config.toml",
+        help="Path to the configuration file (default: config.toml)",
     )
 
     args = parser.parse_args()
 
-    config_file = Path(args.config_file)
+    config_file = Path(args.config)
 
     config = load_config(config_file)
     config.write_config(config_file)

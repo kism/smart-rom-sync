@@ -1,7 +1,7 @@
 [project]
 name = "smartromsync"
 version = "0.2.0"
-description = "Add your description here"
+description = "A smart tool to sync ROMs."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -10,16 +10,22 @@ dependencies = [
     "pydantic-settings>=2.9.1",
     "tomlkit>=0.13.2",
 ]
+[project.urls]
+Homepage = "https://github.com/kism/smart-rom-sync"
 
 [dependency-groups]
-type = [
-    "mypy>=1.15.0",
-    "types-colorama>=0.4.15.20240311",
-]
+type = ["mypy>=1.15.0", "types-colorama>=0.4.15.20240311"]
 lint = ["ruff>=0.9.7"]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-random-order",
+    "detect-test-pollution",
+]
 
 [tool.uv]
-default-groups = ["type", "lint"]
+default-groups = ["type", "lint", "test"]
 
 [build-system]
 requires = ["hatchling"]
@@ -87,6 +93,19 @@ quote-style = "double"
 indent-style = "space"
 docstring-code-format = true
 docstring-code-line-length = 40
+
+[tool.pytest.ini_options]
+addopts = [
+    "--cov-context=test",
+    "--cov=smartromsync",
+    "--cov-report=term",
+    "--cov-report=html",
+]
+testpaths = ["tests"]
+
+[tool.coverage.html]
+show_contexts = true
+
 
 [tool.mypy]
 files = ["smartromsync"]

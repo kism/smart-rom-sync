@@ -1,5 +1,6 @@
 """Smart Rom Sync Tool."""
 
 __version__ = "0.2.0"
-PROGRAM_NAME = "Smart Rom Sync"
+PROGRAM_NAME = "smart-rom-sync"
 URL = "https://github.com/kism/smart-rom-sync"
+DESCRIPTION = "A smart tool to sync ROMs."

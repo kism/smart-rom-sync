@@ -1,0 +1,6 @@
+# Configuration file for smart-rom-sync v0.2.0 https://github.com/kism/smart-rom-sync
+systems = []
+[target]
+type = "local"
+remote_host = ""
+path = "."
