@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import os
 from pathlib import Path
 from typing import Self
 
@@ -30,6 +31,7 @@ class Target(BaseModel):
         if self.type not in ["rsync", "local"]:
             msg = f"Invalid target type: {self.type}. Must be 'rsync' or 'local'."
             logger.error(msg)
+
         return self
 
 
@@ -49,6 +51,9 @@ class System(BaseModel):
         if self.local_dir == self.remote_dir:
             msg = "local_dir and remote_dir cannot be the same."
             logger.error(msg)
+        if self.remote_dir.is_absolute():
+            # Convert to relative path if it's absolute
+            self.remote_dir = Path(str(self.remote_dir).lstrip(os.sep))  # Bit of a HACK to remove leading slashes
 
         return self
 
@@ -87,6 +92,17 @@ class ConfigDef(BaseSettings):
 
         with config_location.open("w") as f:
             f.write(new_file_content_str)
+
+    def print_config(self) -> None:
+        """Print the current configuration."""
+        msg = f"""{PROGRAM_NAME} v{__version__} {URL}
+Current configuration:
+  Target Type: {self.target.type}
+  Remote Host: {self.target.remote_host}
+  Remote base path: {self.target.path}
+  Systems: {len(self.systems)}"""
+
+        logger.info(msg)
 
 
 def load_config(config_path: Path) -> ConfigDef:

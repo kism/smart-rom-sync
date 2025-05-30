@@ -1,6 +1,7 @@
 """Main entry point for the smart-rom-sync program."""
 
 import argparse
+import time
 from pathlib import Path
 
 from smartromsync.sy_config import load_config
@@ -46,6 +47,11 @@ def main() -> None:
     config_file = Path(args.config)
 
     config = load_config(config_file)
+    config.print_config()
+    for _ in range(5):
+        print(".", end="")  # noqa: T201
+        time.sleep(1)
+    print()  # noqa: T201 # Just to make the output nicer
     config.write_config(config_file)
 
     stats = []

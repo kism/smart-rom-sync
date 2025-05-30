@@ -79,7 +79,7 @@ class SystemSync:
         self.system: System = system
         self.target: Target = target
         self.rsync_host_str: str = ""
-        if self.target.type != "local":
+        if self.target.type == "rsync":
             self.rsync_host_str = f"{self.target.remote_host}"
 
         self.remote_dir_full = str(self.target.path / system.remote_dir)
