@@ -1,7 +1,6 @@
 """Config loading, setup, validating, writing."""
 
 import datetime
-import datetime
 import json
 import os
 from pathlib import Path
@@ -11,7 +10,6 @@ import tomlkit
 from pydantic import BaseModel, model_validator
 from pydantic_settings import BaseSettings
 
-from . import PROGRAM_NAME, URL, __version__
 from . import PROGRAM_NAME, URL, __version__
 from .logger import get_logger
 
