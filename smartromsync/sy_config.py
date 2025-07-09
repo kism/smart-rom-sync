@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Self
 
 import tomlkit
-from pydantic import BaseModel, model_validator
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from . import PROGRAM_NAME, URL, __version__
 from .logger import get_logger
@@ -20,6 +20,8 @@ logger = get_logger(__name__)
 
 class Target(BaseModel):
     """Flask configuration definition."""
+
+    model_config = ConfigDict(extra="allow")  # Fine for config
 
     type: str = "local"
     remote_host: str = ""
@@ -37,6 +39,8 @@ class Target(BaseModel):
 
 class System(BaseModel):
     """Application configuration definition."""
+
+    model_config = ConfigDict(extra="allow")  # Fine for config
 
     local_dir: Path = Path()
     remote_dir: Path = Path()
@@ -60,6 +64,8 @@ class System(BaseModel):
 
 class ConfigDef(BaseSettings):
     """Settings loaded from a TOML file."""
+
+    model_config = SettingsConfigDict(extra="allow")  # Fine for config
 
     # Default values for our settings
     target: Target = Target()
@@ -125,15 +131,13 @@ Current configuration:
 
         logger.info(msg)
 
+    @classmethod
+    def load_config(cls, config_path: Path) -> Self:
+        """Load the configuration file."""
+        if not config_path.exists():
+            return cls()
 
-def load_config(config_path: Path) -> ConfigDef:
-    """Load the configuration file."""
-    import tomlkit
+        with config_path.open("r") as f:
+            config = tomlkit.load(f)
 
-    if not config_path.exists():
-        return ConfigDef()
-
-    with config_path.open("r") as f:
-        config = tomlkit.load(f)
-
-    return ConfigDef(**config)
+        return cls(**config)

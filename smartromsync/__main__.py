@@ -4,7 +4,7 @@ import argparse
 import time
 from pathlib import Path
 
-from smartromsync.sy_config import load_config
+from smartromsync.sy_config import ConfigDef
 
 from .logger import get_logger, setup_logger
 from .sy_sync import SystemSync
@@ -46,7 +46,7 @@ def main() -> None:
 
     config_file = Path(args.config)
 
-    config = load_config(config_file)
+    config = ConfigDef.load_config(config_file)
     config.print_config()
     for _ in range(5):
         print(".", end="")  # noqa: T201
