@@ -3,7 +3,7 @@ name = "smartromsync"
 version = "0.3.1"
 description = "A smart tool to sync ROMs."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "colorama>=0.4.6",
     "pydantic>=2.11.4",
@@ -41,7 +41,6 @@ smart-rom-sync = "smartromsync:__main__.main"
 
 [tool.ruff]
 cache-dir = "~/.cache/ruff"
-target-version = "py312"
 line-length = 120
 
 [tool.ruff.lint]
@@ -107,16 +106,3 @@ testpaths = ["tests"]
 show_contexts = true
 
 
-[tool.mypy]
-files = ["smartromsync"]
-namespace_packages = true
-explicit_package_bases = true
-show_error_codes = true
-strict = true
-enable_error_code = [
-    "ignore-without-code",
-    "redundant-expr",
-    "truthy-bool",
-    "type-arg",
-]
-exclude = ["tests/*"]
