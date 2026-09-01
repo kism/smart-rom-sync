@@ -9,11 +9,6 @@ from smartromsync.sy_config import ConfigDef, System
 TEST_CONFIGS_LOCATION = Path.cwd() / "tests" / "configs"
 
 
-def pytest_configure():
-    """Magic function to set module level variables."""
-    pytest.TEST_CONFIGS_LOCATION = TEST_CONFIGS_LOCATION
-
-
 @pytest.fixture
 def sy_default_config(tmp_path, no_sleep) -> ConfigDef:
     config = ConfigDef()
@@ -37,7 +32,7 @@ def place_test_config():
 
     def _place_test_config(config_name, path):
         """Place config in tmp_path by name."""
-        filepath = Path(pytest.TEST_CONFIGS_LOCATION) / config_name
+        filepath = TEST_CONFIGS_LOCATION / config_name
 
         shutil.copyfile(filepath, Path(path) / "config.toml")
 

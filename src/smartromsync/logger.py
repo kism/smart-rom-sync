@@ -3,47 +3,17 @@
 import logging
 import typing
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
-from colorama import Fore, init
+from rich.console import Console
+from rich.highlighter import NullHighlighter
+from rich.logging import RichHandler
+from rich.theme import Theme
 
-init(autoreset=True)
-
-COLOURS = {
-    "TRACE": Fore.CYAN,
-    "DEBUG": Fore.GREEN,
-    "INFO": Fore.WHITE,
-    "WARNING": Fore.YELLOW,
-    "ERROR": Fore.RED,
-    "CRITICAL": Fore.RED,
-}
-
-
-class ColourFormatter(logging.Formatter):
-    """Custom formatter to add colour to the log messages."""
-
-    def _format_value(self, value: typing.Any) -> str:  # noqa: ANN401
-        if isinstance(value, tuple):
-            return "(" + " ".join(map(str, value)) + ")"
-        if isinstance(value, list):
-            return "[" + " ".join(map(str, value)) + "]"
-        return str(value) if value is not None else "<NoneType>"
-
-    def format(self, record: logging.LogRecord) -> str:
-        """Format the log record."""
-        record.msg = self._format_value(record.msg)
-
-        if record.levelno == logging.INFO:
-            return f"{record.getMessage()}"
-
-        if colour := COLOURS.get(record.levelname):
-            record.name = f"{colour}{record.name}"
-            record.levelname = f"{colour}{record.levelname}"
-            record.msg = f"{colour}{record.msg}"
-
-        return super().format(record)
-
+if TYPE_CHECKING:
+    from pathlib import Path
+else:
+    Path = object
 
 LOG_LEVELS = [
     "TRACE",
@@ -55,12 +25,12 @@ LOG_LEVELS = [
 ]  # Valid str logging levels.
 
 # This is the logging message format that I like.
-LOG_FORMAT = "%(levelname)s:%(name)s:%(message)s"
+LOG_FORMAT = "%(levelname)s:%(name)s:%(message)s"  # For the file handler, rich formats the console.
 TRACE_LEVEL_NUM = 5
 
 
 class CustomLogger(logging.Logger):
-    """Custom logger to appease mypy."""
+    """Custom logger to appease ty."""
 
     def trace(self, message: typing.Any, *args: typing.Any, **kws: typing.Any) -> None:  # noqa: ANN401 Typing.any required for logging
         """Create logger level for trace."""
@@ -120,16 +90,15 @@ def _has_file_handler(in_logger: logging.Logger) -> bool:
 
 def _has_console_handler(in_logger: logging.Logger) -> bool:
     """Check if logger has a console handler."""
-    return any(isinstance(handler, logging.StreamHandler) for handler in in_logger.handlers)
+    return any(isinstance(handler, RichHandler | logging.StreamHandler) for handler in in_logger.handlers)
 
 
 def _add_console_handler(in_logger: logging.Logger) -> None:
     """Add a console handler to the logger."""
-    formatter = ColourFormatter(LOG_FORMAT)
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-
-    in_logger.addHandler(console_handler)
+    console = Console(theme=Theme({"logging.level.trace": "dim cyan"}))
+    in_logger.addHandler(
+        RichHandler(console=console, show_time=False, rich_tracebacks=True, highlighter=NullHighlighter())
+    )
 
 
 def _set_log_level(in_logger: logging.Logger, log_level: int | str) -> None:
